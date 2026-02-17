@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>A Letter From My Heart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:      #7c3aed;
+      --rose-lt:   #c4b5fd;
+      --cream:     #f5f3ff;
+      --parchment: #ede9fe;
+      --ink:       #1e1030;
+      --ink-lt:    #4c1d95;
+      --gold:      #7e22ce;
+      --gold-lt:   #a855f7;
+      --env-dark:  #5b21b6;
+      --env-mid:   #7c3aed;
+      --env-light: #a78bfa;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 60% 0%, #e9d5ff 0%, #f5f3ff 55%, #ede9fe 100%);
+      font-family: 'Lora', Georgia, serif;
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 80px;
+      overflow-x: hidden;
+    }
+
+    /* ── Petal rain ── */
+    .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .petal {
+      position: absolute;
+      top: -30px;
+      opacity: 0;
+      animation: fall linear infinite;
+      color: #a855f7;
+      text-shadow: 0 0 8px rgba(168,85,247,.4);
+    }
+    @keyframes fall {
+      0%   { transform: translateY(0) rotate(0deg);   opacity: .75; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* ══ ENVELOPE SCREEN ══ */
+    #envelope-screen {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 120px);
+      width: 100%;
+      transition: opacity .5s ease, transform .5s ease;
+    }
+    #envelope-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(.9) translateY(-20px);
+      position: absolute;
+    }
+
+    /* ── Dudu character ── */
+    .dudu-wrap {
+      position: relative;
+      margin-bottom: 4px;
+      z-index: 10;
+      animation: dudubounce 1.6s ease-in-out infinite;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    @keyframes dudubounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+
+    .dudu-bubble {
+      background: #fff;
+      border: 2px solid var(--rose-lt);
+      border-radius: 18px;
+      padding: 9px 16px;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(12px, 2.2vw, 14px);
+      color: var(--env-dark);
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(124,58,237,.18);
+      margin-bottom: 10px;
+      position: relative;
+      animation: bubblepop .6s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes bubblepop {
+      from { opacity: 0; transform: scale(.7) translateY(6px); }
+      to   { opacity: 1; transform: scale(1) translateY(0);    }
+    }
+    .dudu-bubble::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border-left: 9px solid transparent;
+      border-right: 9px solid transparent;
+      border-top: 9px solid var(--rose-lt);
+    }
+    .dudu-bubble::before {
+      content: '';
+      position: absolute;
+      top: calc(100% - 2px); left: 50%;
+      transform: translateX(-50%);
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 7px solid #fff;
+      z-index: 1;
+    }
+
+    .dudu-emoji {
+      width: clamp(110px, 22vw, 155px);
+      cursor: pointer;
+      filter: drop-shadow(0 6px 18px rgba(124,58,237,.35));
+      display: block;
+      transition: transform .25s;
+      user-select: none;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .dudu-emoji:hover { transform: scale(1.1) rotate(-4deg); }
+    .dudu-emoji:active { transform: scale(.93); }
+
+    /* ── Envelope ── */
+    .envelope {
+      width: min(460px, 90vw);
+      position: relative;
+      cursor: pointer;
+      filter: drop-shadow(0 18px 44px rgba(91,33,182,.28));
+      transition: transform .2s;
+    }
+    .envelope:hover { transform: translateY(-4px); }
+
+    .env-back {
+      background: linear-gradient(160deg, var(--env-mid) 0%, var(--env-dark) 100%);
+      border-radius: 14px;
+      width: 100%;
+      padding-top: 62%;
+      position: relative;
+      overflow: hidden;
+    }
+    .env-back::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(45deg,  rgba(255,255,255,.04) 0, rgba(255,255,255,.04) 1px, transparent 0, transparent 50%),
+        repeating-linear-gradient(-45deg, rgba(255,255,255,.04) 0, rgba(255,255,255,.04) 1px, transparent 0, transparent 50%);
+      background-size: 24px 24px;
+    }
+
+    .env-fold-bottom {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 55%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .env-fold-bottom::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: -2%; right: -2%;
+      border-left: 52vw solid transparent;
+      border-right: 52vw solid transparent;
+      border-bottom: 36vw solid rgba(0,0,0,.18);
+    }
+
+    .env-fold-left, .env-fold-right {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 52%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .env-fold-left { left: 0; }
+    .env-fold-right { right: 0; }
+    .env-fold-left::before {
+      content: '';
+      position: absolute;
+      top: -5%; bottom: -5%; left: -5%;
+      border-top: 40vw solid transparent;
+      border-bottom: 40vw solid transparent;
+      border-left: 28vw solid rgba(0,0,0,.10);
+    }
+    .env-fold-right::before {
+      content: '';
+      position: absolute;
+      top: -5%; bottom: -5%; right: -5%;
+      border-top: 40vw solid transparent;
+      border-bottom: 40vw solid transparent;
+      border-right: 28vw solid rgba(0,0,0,.10);
+    }
+
+    .env-flap {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 53%;
+      transform-origin: top center;
+      transition: transform .75s cubic-bezier(.4,.0,.2,1);
+      z-index: 5;
+      overflow: hidden;
+    }
+    .env-flap::before {
+      content: '';
+      position: absolute;
+      top: -4%; left: -4%; right: -4%;
+      border-left: 54vw solid transparent;
+      border-right: 54vw solid transparent;
+      border-top: 40vw solid var(--env-light);
+    }
+
+    .env-seal {
+      position: absolute;
+      top: 38%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 6;
+      width: clamp(46px, 10vw, 66px);
+      height: clamp(46px, 10vw, 66px);
+      background: radial-gradient(circle at 35% 35%, #ddd6fe, #4c1d95);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(22px, 4.5vw, 32px);
+      box-shadow: 0 4px 18px rgba(91,33,182,.55), inset 0 -3px 6px rgba(0,0,0,.25);
+      border: 3px solid rgba(255,255,255,.4);
+      transition: transform .45s ease, opacity .45s ease;
+    }
+
+    .tap-hint {
+      margin-top: 20px;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 13px;
+      letter-spacing: .1em;
+      color: var(--rose-lt);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: .55; }
+      50%       { opacity: 1; }
+    }
+
+    /* ══ LETTER SCREEN ══ */
+    #letter-screen {
+      display: none;
+      opacity: 0;
+      transform: translateY(30px) scale(.97);
+      transition: opacity .65s ease, transform .65s ease;
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 720px;
+      padding-top: 0;
+    }
+    #letter-screen.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .letter-topbar {
+      background: linear-gradient(160deg, var(--env-light) 0%, var(--env-mid) 100%);
+      border-radius: 12px 12px 0 0;
+      height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 13px; letter-spacing: .18em;
+      color: #f5f3ff; text-transform: uppercase;
+      border: 1.5px solid var(--env-dark); border-bottom: none;
+      position: relative;
+    }
+    .letter {
+      background: var(--parchment);
+      border: 1.5px solid #c4b5fd; border-top: none;
+      border-radius: 0 0 16px 16px;
+      padding: clamp(28px, 6vw, 64px) clamp(24px, 7vw, 72px);
+      position: relative; overflow: hidden;
+      box-shadow: 0 12px 40px rgba(109,40,217,.15);
+    }
+    .letter::before {
+      content: '♥';
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(160px, 28vw, 260px);
+      color: rgba(124,58,237,.04);
+      pointer-events: none; line-height: 1;
+    }
+    .letter-lines {
+      position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(
+        transparent, transparent 31px,
+        rgba(160,110,220,.13) 31px, rgba(160,110,220,.13) 32px
+      );
+      background-position: 0 96px; pointer-events: none;
+    }
+    .letter-content { position: relative; z-index: 2; }
+
+    .corner { position: absolute; width: 48px; height: 48px; opacity: .25; font-size: 24px; pointer-events: none; z-index: 1; }
+    .corner.tl { top: 12px; left: 14px; }
+    .corner.tr { top: 12px; right: 14px; text-align: right; }
+    .corner.bl { bottom: 12px; left: 14px; }
+    .corner.br { bottom: 12px; right: 14px; text-align: right; }
+
+    .date-line { font-size: 12.5px; letter-spacing: .12em; color: var(--gold); text-transform: uppercase; text-align: right; margin-bottom: 32px; font-family: 'Playfair Display', serif; }
+    .salutation { font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(22px, 4vw, 30px); color: var(--rose); margin-bottom: 28px; line-height: 1.3; }
+    .body-text { font-size: clamp(15px, 2.2vw, 17px); line-height: 2; color: var(--ink-lt); margin-bottom: 22px; }
+    .body-text .highlight { color: var(--rose); font-style: italic; font-weight: 500; }
+    .verse { border-left: 3px solid var(--rose-lt); padding: 16px 20px; margin: 32px 0; font-style: italic; font-size: clamp(14px, 2vw, 16px); color: var(--ink-lt); background: rgba(124,58,237,.05); border-radius: 0 8px 8px 0; line-height: 1.9; }
+    .promises { margin: 28px 0; padding: 24px 28px; background: rgba(124,58,237,.06); border: 1px dashed var(--gold-lt); border-radius: 10px; }
+    .promises-title { font-family: 'Playfair Display', serif; font-size: 13px; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+    .promise-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: clamp(14px, 1.9vw, 15.5px); color: var(--ink-lt); line-height: 1.7; }
+    .promise-item .icon { color: var(--rose-lt); font-size: 14px; flex-shrink: 0; margin-top: 4px; }
+    .closing { margin-top: 36px; font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(15px, 2.5vw, 18px); color: var(--ink-lt); line-height: 1.8; }
+    .signature { margin-top: 20px; font-family: 'Playfair Display', serif; font-size: clamp(28px, 5vw, 40px); color: var(--rose); font-style: italic; font-weight: 600; text-align: right; }
+    .sorry-sticker { width: clamp(110px, 28vw, 160px); margin: 32px auto 0; filter: drop-shadow(0 4px 14px rgba(124,58,237,.22)); border-radius: 16px; overflow: hidden; animation: sorryFloat 3s ease-in-out infinite; }
+    @keyframes sorryFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .sorry-sticker .tenor-gif-embed { margin: 0 !important; }
+    .ribbon { text-align: center; margin-top: 20px; font-family: 'Playfair Display', serif; font-style: italic; font-size: 13px; letter-spacing: .1em; color: var(--rose-lt); }
+
+    .back-btn {
+      display: flex; align-items: center; gap: 8px;
+      margin: 28px auto 0;
+      background: none; border: 1.5px solid var(--rose-lt);
+      border-radius: 24px; padding: 9px 22px;
+      font-family: 'Playfair Display', serif; font-style: italic; font-size: 14px;
+      color: var(--rose); cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+    .back-btn:hover { background: rgba(124,58,237,.08); transform: scale(1.04); }
+
+    @media (max-width: 500px) {
+      body { padding: 24px 10px 60px; }
+      .letter { padding: 24px 20px; }
+      .promises { padding: 18px 16px; }
+      .dudu-bubble { white-space: normal; max-width: 220px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="petals" id="petals"></div>
+
+<!-- ══ ENVELOPE SCREEN ══ -->
+<div id="envelope-screen">
+  <div class="dudu-wrap">
+    <div class="dudu-bubble" id="bubble">Baby? I'm really sorry about last night, I have something to tell you! 💜 Tap to open~</div>
+    <div class="dudu-emoji" id="dudu">
+      <img src="sorry.gif" alt="Sorry bear" style="width:100%;height:auto;display:block;border-radius:16px;" />
+    </div>
+  </div>
+
+  <div class="envelope" id="envelope" onclick="openEnvelope()">
+    <div class="env-back">
+      <div class="env-fold-bottom"></div>
+      <div class="env-fold-left"></div>
+      <div class="env-fold-right"></div>
+      <div class="env-flap" id="envFlap"></div>
+      <div class="env-seal" id="envSeal">💜</div>
+    </div>
+  </div>
+
+  <div class="tap-hint">✦ tap the envelope to open ✦</div>
+</div>
+
+<!-- ══ LETTER SCREEN ══ -->
+<div id="letter-screen">
+  <div class="letter-topbar">A Letter From My Heart</div>
+
+  <div class="letter">
+    <div class="letter-lines"></div>
+    <div class="corner tl">✦</div>
+    <div class="corner tr">✦</div>
+    <div class="corner bl">✦</div>
+    <div class="corner br">✦</div>
+
+    <div class="letter-content">
+      <div class="salutation">To my Baby,</div>
+
+      <p class="body-text">
+        I am writing this with a heavy heart and the sincerest hope that these words reach you the way I truly mean — not just as letters on a page, but as a piece of my soul reaching out to yours. I am
+        <span class="highlight">deeply and genuinely sorry</span> for the pain I caused you.
+      </p>
+
+      <p class="body-text">
+        I'm really sorry baby, mas gin una ko pa ang akun emotion nga na feel feel because naga sunggod ko. I was <span class="highlight">wrong</span>, and I know it. You deserved better from me — patience, understanding, and the kind of love you give me every single day without hesitation. I failed to meet you at your level, and I hate that I made you feel anything less than <span class="highlight">cherished</span>.
+      </p>
+
+      <div class="verse">
+        "I am sorry baby for the times my selos and sunggod stood taller than my love, I'm really sorry for that.<br>
+       
+
+      <p class="body-text">
+        You are the most important person in my life, baby. 
+      </p>
+
+      <div class="promises">
+        <div class="promises-title">My promises to you</div>
+        <div class="promise-item"><span class="icon">❀</span><span>I promise to listen to you — truly listen — before I react.</span></div>
+        <div class="promise-item"><span class="icon">❀</span><span>I promise to choose "us" over my ego, every single time.</span></div>
+        <div class="promise-item"><span class="icon">❀</span><span>I promise to be more thoughtful, more present, and more patient.</span></div>
+        <div class="promise-item"><span class="icon">❀</span><span>I promise to never stop working to be the partner you deserve.</span></div>
+        <div class="promise-item"><span class="icon">❀</span><span>I promise that your heart will always be safe with me.</span></div>
+      </div>
+
+      <p class="body-text">
+        I know that an apology means nothing without changed behaviour. I am not asking you to forget — I am asking you to believe that I am willing to grow, to do better, and to prove through my actions that you were right to love me. You have always seen the best in me, even when I struggled to see it in myself. Please give me the chance to live up to your faith.
+      </p>
+
+      <p class="body-text">
+        No matter what, I love you — fiercely, completely, and without condition. You are worth every effort, every apology, every moment of growth. I am <span class="highlight">sorry from the deepest part of my heart.</span>
+      </p>
+
+      <div class="sorry-sticker">
+        <img src="bubu-dudu-sseeyall.gif" alt="Bubu with rose" style="width:100%;height:auto;display:block;border-radius:16px;" />
+      </div>
+
+      <div class="closing">Forever yours and truly sorry,</div>
+      <div class="signature">Your Love ♥</div>
+    </div>
+  </div>
+
+  <div class="ribbon">— written with love, honesty &amp; a hopeful heart —</div>
+  <button class="back-btn" onclick="closeEnvelope()">💜 Put it back in the envelope</button>
+</div>
+
+<script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+
+<script>
+  /* ── Falling petals ── */
+  const petalContainer = document.getElementById('petals');
+  const symbols = ['💜','🟣','✦','❋','✿'];
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (6 + Math.random() * 10) + 's';
+    p.style.animationDelay   = (Math.random() * 12) + 's';
+    p.style.fontSize = (12 + Math.random() * 16) + 'px';
+    petalContainer.appendChild(p);
+  }
+
+  /* ── Dudu click messages ── */
+  const duduMsgs = [
+    "Psst… there's a secret letter for you! 💜 Tap to open~",
+    "Come on, open it! 🥺 It's straight from the heart~",
+    "Don't be shy… tap that purple envelope! 💌",
+    "I believe in you~ just one little tap! ✨",
+    "It's a love letter!! Open it already!! 💜💜",
+    "Okay okay I'll stop bugging you 😅 ...please open it tho 💜"
+  ];
+  let msgIdx = 0;
+  const bubble = document.getElementById('bubble');
+  const duduWrap = document.querySelector('.dudu-wrap');
+
+  duduWrap.addEventListener('click', e => {
+    e.stopPropagation();
+    msgIdx = (msgIdx + 1) % duduMsgs.length;
+    bubble.style.animation = 'none';
+    void bubble.offsetHeight;
+    bubble.style.animation = 'bubblepop .45s cubic-bezier(.34,1.56,.64,1) both';
+    bubble.textContent = duduMsgs[msgIdx];
+  });
+
+  /* ── Open envelope ── */
+  function openEnvelope() {
+    const flap      = document.getElementById('envFlap');
+    const seal      = document.getElementById('envSeal');
+    const envScreen = document.getElementById('envelope-screen');
+    const letterScr = document.getElementById('letter-screen');
+
+    flap.style.transform = 'rotateX(180deg)';
+    seal.style.opacity   = '0';
+    seal.style.transform = 'translate(-50%, -50%) scale(.4)';
+
+    bubble.style.animation = 'none';
+    void bubble.offsetHeight;
+    bubble.style.animation = 'bubblepop .45s cubic-bezier(.34,1.56,.64,1) both';
+    bubble.textContent = "Yay!! You opened it!! 🎉💜";
+
+    setTimeout(() => {
+      envScreen.classList.add('hidden');
+      letterScr.style.display = 'block';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        letterScr.classList.add('visible');
+      }));
+    }, 820);
+  }
+
+  /* ── Close / put back ── */
+  function closeEnvelope() {
+    const flap      = document.getElementById('envFlap');
+    const seal      = document.getElementById('envSeal');
+    const envScreen = document.getElementById('envelope-screen');
+    const letterScr = document.getElementById('letter-screen');
+
+    letterScr.classList.remove('visible');
+
+    setTimeout(() => {
+      letterScr.style.display = 'none';
+      flap.style.transform = '';
+      seal.style.opacity   = '';
+      seal.style.transform = '';
+      envScreen.classList.remove('hidden');
+      msgIdx = 0;
+      bubble.textContent = duduMsgs[0];
+    }, 600);
+  }
+</script>
+</body>
+</html>
